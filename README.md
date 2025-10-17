@@ -4,19 +4,21 @@ This repository provides core scripts for developing and validating 7 ML models 
   This repository contains the core scripts for developing and validating machine learning (ML) models to predict exercise intolerance after percutaneous coronary intervention (PCI), based on routinely collected clinical and laboratory parameters.  
   We constructed and compared seven supervised ML algorithms (Logistic Regression, Random Forest, Support Vector Machine, K-Nearest Neighbors, Extreme Gradient Boosting, Multilayer Perceptron, and LightGBM). The workflow includes data preprocessing, feature engineering, model training, internal validation, and clinical interpretability analysis
 
-# 2. Project structure
-├── README.md  
-├── Data preprocessing/  
-│   ├── Data_Cleaning_and_Splitting.py  
-│   ├── MissingValue_Imputation.py  
-│   └── Variable_Standardization.py  
-├── Model Construction and Evaluation/  
-│   ├── ROC_and_Calibration.py  
-│   └── Decision_Curve_Analysis.py  
-├── Interpretation/  
-│   └── SHAP_Interpretation.py  
-└── Deployment/  
-    └── ShinyApp_with_reticulate.R/   
+# 2.📁Project structure
+
+- `README.md` – Project overview and instructions
+- `Data preprocessing/`
+  - `Data_Cleaning_and_Splitting.py` – Clean raw data and create train/test sets
+  - `MissingValue_Imputation.py` – Impute missing values using appropriate methods
+  - `Variable_Standardization.py` – Scale and normalize features
+- `Model Construction and Evaluation/`
+  - `ROC_and_Calibration.py` – ROC curves and model calibration assessments
+  - `Decision_Curve_Analysis.py` – Clinical utility evaluation using DCA
+- `Interpretation/`
+  - `SHAP_Interpretation.py` – SHAP values and feature contribution visualization
+- `Deployment/`
+  - `ShinyApp_with_reticulate.R` – Deploy web-based risk calculator using R
+
 
 # 3. Methods
 ## 3.1 Data Preprocessing
@@ -39,7 +41,7 @@ To assess robustness, the Boruta algorithm was applied to evaluate the relative 
 | **Extreme Gradient Boosting (XGB)** | Gradient-boosted trees with regularization | `n_estimators`, `learning_rate`, `max_depth`, `min_child_weight`, `gamma`, `subsample`, `colsample_bytree`, `reg_lambda`, `booster` |
 | **Multilayer Perceptron (MLP)** | Feedforward neural network for nonlinear mapping | `hidden_layer_sizes`, `activation`, `learning_rate`, `max_iter`, `alpha`, `epoch` |
 | **Light Gradient Boosting Machine (LightGBM)** | Histogram-based gradient boosting framework | `num_leaves`, `max_depth`, `min_child_samples`, `learning_rate`, `n_estimators`, `reg_alpha`, `reg_lambda`, `feature_fraction`, `bagging_fraction`, `bagging_freq`, `class_weight` |
-# 4 Model Construction
+# 4. Model Construction
 **Discrimination**: ROC curves and AUROC with 95% CI using bootstrapping (n=1000).  
 **Calibration**: Reliability curves (LOWESS smoothed), Brier score, and Hosmer–Lemeshow test.  
 **Performance Metrics**: Accuracy, recall, specificity, PPV, NPV, and F1 score at representative thresholds (default, F1-optimal).  
