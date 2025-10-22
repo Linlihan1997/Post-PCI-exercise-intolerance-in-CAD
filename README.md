@@ -7,18 +7,17 @@ This repository provides core scripts for developing and validating 7 ML models 
 # 2.📁Project structure
 
 - `README.md` – Project overview and instructions
-- `Data preprocessing/`
-  - `Data_Cleaning_and_Splitting.py` – Clean raw data and create train/test sets
-  - `MissingValue_Imputation.py` – Impute missing values using appropriate methods
-  - `Variable_Standardization.py` – Scale and normalize features
+- `Data preprocessing and feature selection/`
+  - `Data preprocessing.py` – 
+  - `feature selection.R` –  
 - `Model Construction and Evaluation/`
-  - `Model construction.py` – ROC curves and model calibration assessments
-  - `ROC_and_Calibration.py` – ROC curves and model calibration assessments
-  - `Decision_Curve_Analysis.py` – Clinical utility evaluation using DCA
+  - `Model construction.py`  – 
+  - `ROC_and_Calibration.py`  – 
+  - `Decision_Curve_Analysis.py`  – 
 - `Interpretation/`
-  - `SHAP_Interpretation.py` – SHAP values and feature contribution visualization
+  - `SHAP_Interpretation.py`  – 
 - `Deployment/`
-  - `ShinyApp_with_reticulate.R` – Deploy web-based risk calculator using R
+  - `ShinyApp_with_reticulate.R` – 
 
 
 # 3. Methods
