@@ -20,7 +20,6 @@ from sklearn.metrics import (
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
@@ -89,16 +88,6 @@ models = {
         ))
     ]),
 
-    # SVM（未给定表格最佳值，保留原设定）
-    "SVM": Pipeline([
-        ("scaler", StandardScaler()),
-        ("svm", SVC(
-            kernel="rbf",
-            probability=True,
-            random_state=RANDOM_STATE
-        ))
-    ]),
-
     # XGBoost（表：n_estimators=350, lr=0.06, max_depth=8, min_child_weight=5, gamma=3,
     #          subsample=0.7, colsample_bytree=0.4, reg_lambda=4, booster=gbtree）
     "XGB": XGBClassifier(
@@ -117,8 +106,7 @@ models = {
         random_state=RANDOM_STATE
     ),
 
-    # MLP（表：hidden layer sizes=20, activation=relu, lr=0.001, max_iter=1000, alpha=1e-5, epoch=30）
-    # 注：sklearn 无“epoch”参数，训练轮数以 max_iter 控制
+    # MLP（表：hidden layer sizes=20, activation=relu, lr=0.001, max_iter=1000, alpha=1e-5）
     "MLP": Pipeline([
         ("scaler", StandardScaler()),
         ("mlp", MLPClassifier(
@@ -161,7 +149,6 @@ for name, mdl in models.items():
     if hasattr(mdl, "predict_proba"):
         y_prob = mdl.predict_proba(X_test)[:, 1]
     else:
-        # e.g., some SVM settings
         dec = mdl.decision_function(X_test)
         y_prob = (dec - dec.min()) / (dec.max() - dec.min() + 1e-12)
     roc_data[name] = (y_test.values, y_prob)
@@ -284,4 +271,5 @@ for _, r in mlp_thr_df.iterrows():
 sim_df = pd.DataFrame(sim_rows)
 sim_df.to_excel("MLP_PPV_NPV_Simulated_Prevalence.xlsx", index=False)
 print("✅ Saved: MLP_PPV_NPV_Simulated_Prevalence.xlsx")
+
 print(sim_df.head())
