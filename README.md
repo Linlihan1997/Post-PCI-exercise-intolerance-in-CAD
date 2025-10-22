@@ -32,15 +32,16 @@ Continuous variables were standardized (z-score) for algorithms requiring scalin
 We performed in two stages. First, the least absolute shrinkage and selection operator (LASSO) regression with 10-fold cross-validation was used to select predictors by shrinking irrelevant coefficients to zero.   
 To assess robustness, the Boruta algorithm was applied to evaluate the relative importance of all candidate variables. Multicollinearity was assessed using the variance inflation factor (VIF), with VIF <5 considered acceptable.  
 ## 3.3 Model Construction
-### Model and Key Parameters
-| Model | Description | Key Parameters |
-|:------|:-------------|:----------------|
-| **Logistic Regression (LR)** | Linear baseline classifier with logit link | `alpha`, `lambda` |
-| **Random Forest (RF)** | Ensemble of decision trees reducing variance | `ntree`, `mtry`, `nodesize`, `class_weight`, `n_jobs` |
-| **K-Nearest Neighbors (KNN)** | Predicts class by majority vote of nearest neighbors | `k`, `distance`, `kernel` |
-| **Extreme Gradient Boosting (XGB)** | Gradient-boosted trees with regularization | `n_estimators`, `learning_rate`, `max_depth`, `min_child_weight`, `gamma`, `subsample`, `colsample_bytree`, `reg_lambda`, `booster` |
-| **Multilayer Perceptron (MLP)** | Feedforward neural network for nonlinear mapping | `hidden_layer_sizes`, `activation`, `learning_rate`, `max_iter`, `alpha`, `epoch` |
-| **Light Gradient Boosting Machine (LightGBM)** | Histogram-based gradient boosting framework | `num_leaves`, `max_depth`, `min_child_samples`, `learning_rate`, `n_estimators`, `reg_alpha`, `reg_lambda`, `feature_fraction`, `bagging_fraction`, `bagging_freq`, `class_weight` |
+| Model                                          | Description                                                   | Key Parameters                                                                                                                                                                     |
+| :--------------------------------------------- | :------------------------------------------------------------ | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Logistic Regression (LR)**                   | Linear baseline classifier with logit link                    | `alpha`, `lambda`                                                                                                                                                                  |
+| **Random Forest (RF)**                         | Ensemble of decision trees reducing variance                  | `ntree`, `mtry`, `nodesize`, `class_weight`, `n_jobs`                                                                                                                              |
+| **Support Vector Machine (SVM)**               | Kernel-based classifier maximizing the margin between classes | `C`, `kernel`, `gamma`                                                                                                                                                             |
+| **K-Nearest Neighbors (KNN)**                  | Predicts class by majority vote of nearest neighbors          | `k`, `distance`, `kernel`                                                                                                                                                          |
+| **Extreme Gradient Boosting (XGB)**            | Gradient-boosted trees with regularization                    | `n_estimators`, `learning_rate`, `max_depth`, `min_child_weight`, `gamma`, `subsample`, `colsample_bytree`, `reg_lambda`, `booster`                                                |
+| **Multilayer Perceptron (MLP)**                | Feedforward neural network for nonlinear mapping              | `hidden_layer_sizes`, `activation`, `learning_rate`, `max_iter`, `alpha`, `epoch`                                                                                                  |
+| **Light Gradient Boosting Machine (LightGBM)** | Histogram-based gradient boosting framework                   | `num_leaves`, `max_depth`, `min_child_samples`, `learning_rate`, `n_estimators`, `reg_alpha`, `reg_lambda`, `feature_fraction`, `bagging_fraction`, `bagging_freq`, `class_weight` |
+
 # 4. Model Construction
 **Discrimination**: ROC curves and AUROC with 95% CI using bootstrapping (n=1000).  
 **Calibration**: Reliability curves (LOWESS smoothed), Brier score, and Hosmer–Lemeshow test.  
