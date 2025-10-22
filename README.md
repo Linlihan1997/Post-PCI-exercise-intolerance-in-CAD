@@ -24,8 +24,8 @@ This repository provides core scripts for developing and validating 7 ML models 
 ## 3.1 Data Preprocessing
 Clinical and demographic variables were standardized before modeling.  
 Outcome variable (exercise_tolerance) was coded as binary:  
-· _1 = Exercise tolerance_  
-· _0 = Exercise intolerance_    
+· _0 = Exercise tolerance_  
+· _1 = Exercise intolerance_    
 Missing values were handled using appropriate imputation methods.  
 Continuous variables were standardized (z-score) for algorithms requiring scaling.  
 ## 3.2 Feature Selection
