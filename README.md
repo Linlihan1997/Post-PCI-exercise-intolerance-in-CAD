@@ -7,18 +7,16 @@ This repository provides core scripts for developing and validating 7 ML models 
 # 2.📁Project structure
 
 - `README.md` – Project overview and instructions
-- `Data preprocessing and feature selection/`
-  - `Data preprocessing.py` – 
-  - `feature selection.R` –  
+- `Feature selection/`
+  - `feature selection.R`
 - `Model Construction and Evaluation/`
-  - `Model construction.py`  – 
-  - `ROC_and_Calibration.py`  – 
-  - `Decision_Curve_Analysis.py`  – 
+  - `Model construction.py`
+  - `ROC_and_Calibration.py`
+  - `Decision_Curve_Analysis.py` 
 - `Interpretation/`
-  - `SHAP_Interpretation.py`  – 
+  - `SHAP_Interpretation.py` 
 - `Deployment/`
-  - `ShinyApp_with_reticulate.R` – 
-
+  - `ShinyApp_with_reticulate.R`
 
 # 3. Methods
 ## 3.1 Data Preprocessing
