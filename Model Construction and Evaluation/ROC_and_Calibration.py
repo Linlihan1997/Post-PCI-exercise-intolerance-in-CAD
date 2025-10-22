@@ -53,7 +53,7 @@ X_train, X_test, y_train, y_test = train_test_split(
 # 2) Define models (default params)
 # -----------------------------
 models = {
-    # 随机森林（表：ntree=900, mtry=3, nodesize=5, class_weight=balanced, n_jobs=-1）
+    # RF
     "RF": RandomForestClassifier(
         n_estimators=900,
         max_features=3,
@@ -63,8 +63,7 @@ models = {
         random_state=RANDOM_STATE
     ),
 
-    # 逻辑回归（表：alpha=0.1, lambda=3.77081389）
-    # 弹性网：alpha→l1_ratio, lambda→C的倒数
+    # LR
     "LR": Pipeline([
         ("scaler", StandardScaler()),
         ("lr", LogisticRegression(
@@ -76,8 +75,20 @@ models = {
             random_state=RANDOM_STATE
         ))
     ]),
-
-    # KNN（表：k=95, distance=2, kernel=distance）
+    # SVM
+    "SVM": (
+    Pipeline([
+        ("scaler", StandardScaler()),
+        ("svm", SVC(kernel="rbf", probability=True, random_state=RANDOM_STATE))
+    ]),
+    {
+        # Tuning range: C = 2^seq(log2(0.1), log2(40), by=0.5)
+        "svm__C": list(2.0 ** np.arange(np.log2(0.1), np.log2(40) + 1e-12, 0.5)),
+        # Kernel fixed as RBF, corresponding gamma range = 1/(2*(2^seq(-10,-5,0.5))^2)
+        "svm__gamma": list(1.0 / (2.0 * (2.0 ** np.arange(-10, -5 + 1e-12, 0.5)) ** 2)),
+    },
+    )
+    # KNN
     "KNN": Pipeline([
         ("scaler", StandardScaler()),
         ("knn", KNeighborsClassifier(
@@ -88,8 +99,7 @@ models = {
         ))
     ]),
 
-    # XGBoost（表：n_estimators=350, lr=0.06, max_depth=8, min_child_weight=5, gamma=3,
-    #          subsample=0.7, colsample_bytree=0.4, reg_lambda=4, booster=gbtree）
+    # XGBoost
     "XGB": XGBClassifier(
         objective="binary:logistic",
         eval_metric="logloss",
@@ -106,7 +116,7 @@ models = {
         random_state=RANDOM_STATE
     ),
 
-    # MLP（表：hidden layer sizes=20, activation=relu, lr=0.001, max_iter=1000, alpha=1e-5）
+    # MLP
     "MLP": Pipeline([
         ("scaler", StandardScaler()),
         ("mlp", MLPClassifier(
@@ -119,9 +129,7 @@ models = {
 )
     ]),
 
-    # LightGBM（表：num_leaves=2, max_depth=4, min_child_samples=35, learning_rate=0.12,
-    #           n_estimators=200, reg_alpha=0.1, reg_lambda=1, feature_fraction=0.4,
-    #           bagging_fraction=0.9, bagging_freq=1, class_weight=balanced）
+    # LightGBM
     "LightGBM": LGBMClassifier(
         objective="binary",
         num_leaves=2,
@@ -273,3 +281,4 @@ sim_df.to_excel("MLP_PPV_NPV_Simulated_Prevalence.xlsx", index=False)
 print("✅ Saved: MLP_PPV_NPV_Simulated_Prevalence.xlsx")
 
 print(sim_df.head())
+
