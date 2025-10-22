@@ -20,12 +20,14 @@ from sklearn.metrics import (
 
 from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 
 from statsmodels.nonparametric.smoothers_lowess import lowess
+from scipy.stats import chi2  # <-- for Hosmer–Lemeshow test
 
 # -----------------------------
 # 0) Config
@@ -53,17 +55,8 @@ X_train, X_test, y_train, y_test = train_test_split(
 # 2) Define models (default params)
 # -----------------------------
 models = {
-    # RF
-    "RF": RandomForestClassifier(
-        n_estimators=900,
-        max_features=3,
-        min_samples_leaf=5,
-        class_weight="balanced",
-        n_jobs=-1,
-        random_state=RANDOM_STATE
-    ),
-
-    # LR
+    # 逻辑回归（表：alpha=0.1, lambda=3.77081389）
+    # 弹性网：alpha→l1_ratio, lambda→C的倒数
     "LR": Pipeline([
         ("scaler", StandardScaler()),
         ("lr", LogisticRegression(
@@ -75,20 +68,26 @@ models = {
             random_state=RANDOM_STATE
         ))
     ]),
-    # SVM
-    "SVM": (
-    Pipeline([
+
+    # 随机森林（表：ntree=900, mtry=3, nodesize=5, class_weight=balanced, n_jobs=-1）
+    "RF": RandomForestClassifier(
+        n_estimators=900,
+        max_features=3,
+        min_samples_leaf=5,
+        class_weight="balanced",
+        n_jobs=-1,
+        random_state=RANDOM_STATE
+    ),
+   # SVM（保留原设定）
+    "SVM": Pipeline([
         ("scaler", StandardScaler()),
-        ("svm", SVC(kernel="rbf", probability=True, random_state=RANDOM_STATE))
+        ("svm", SVC(
+            kernel="rbf",
+            probability=True,
+            random_state=RANDOM_STATE
+        ))
     ]),
-    {
-        # Tuning range: C = 2^seq(log2(0.1), log2(40), by=0.5)
-        "svm__C": list(2.0 ** np.arange(np.log2(0.1), np.log2(40) + 1e-12, 0.5)),
-        # Kernel fixed as RBF, corresponding gamma range = 1/(2*(2^seq(-10,-5,0.5))^2)
-        "svm__gamma": list(1.0 / (2.0 * (2.0 ** np.arange(-10, -5 + 1e-12, 0.5)) ** 2)),
-    },
-    )
-    # KNN
+    # KNN（表：k=95, distance=2, kernel=distance）
     "KNN": Pipeline([
         ("scaler", StandardScaler()),
         ("knn", KNeighborsClassifier(
@@ -99,7 +98,10 @@ models = {
         ))
     ]),
 
-    # XGBoost
+ 
+
+    # XGBoost（表：n_estimators=350, lr=0.06, max_depth=8, min_child_weight=5, gamma=3,
+    #          subsample=0.7, colsample_bytree=0.4, reg_lambda=4, booster=gbtree）
     "XGB": XGBClassifier(
         objective="binary:logistic",
         eval_metric="logloss",
@@ -116,7 +118,8 @@ models = {
         random_state=RANDOM_STATE
     ),
 
-    # MLP
+    # MLP（表：hidden layer sizes=20, activation=relu, lr=0.001, max_iter=1000, alpha=1e-5）
+    # 注：sklearn 无“epoch”参数，训练轮数以 max_iter 控制
     "MLP": Pipeline([
         ("scaler", StandardScaler()),
         ("mlp", MLPClassifier(
@@ -125,11 +128,13 @@ models = {
             learning_rate_init=0.001,
             alpha=1e-5,
             max_iter=1000,
-            random_state=42
-)
+            random_state=RANDOM_STATE
+        ))
     ]),
 
-    # LightGBM
+    # LightGBM（表：num_leaves=2, max_depth=4, min_child_samples=35, learning_rate=0.12,
+    #           n_estimators=200, reg_alpha=0.1, reg_lambda=1, feature_fraction=0.4,
+    #           bagging_fraction=0.9, bagging_freq=1, class_weight=balanced）
     "LightGBM": LGBMClassifier(
         objective="binary",
         num_leaves=2,
@@ -157,10 +162,45 @@ for name, mdl in models.items():
     if hasattr(mdl, "predict_proba"):
         y_prob = mdl.predict_proba(X_test)[:, 1]
     else:
+        # e.g., some SVM settings
         dec = mdl.decision_function(X_test)
         y_prob = (dec - dec.min()) / (dec.max() - dec.min() + 1e-12)
     roc_data[name] = (y_test.values, y_prob)
     brier_notes[name] = brier_score_loss(y_test, y_prob)
+
+# -----------------------------
+# 3.5) Hosmer–Lemeshow (H-L) test
+# -----------------------------
+def hosmer_lemeshow_p(y_true, y_prob, g=10):
+    """
+    Hosmer–Lemeshow goodness-of-fit test grouped by quantiles of predicted risk.
+    Returns p-value.
+    """
+    df_tmp = pd.DataFrame({"y": y_true, "p": y_prob}).sort_values("p")
+    # 分为 g 个分位数组；若有大量并列概率，pandas 会自动做重复处理
+    df_tmp["bin"] = pd.qcut(df_tmp["p"], q=g, duplicates="drop")
+    grouped = df_tmp.groupby("bin", observed=True)
+
+    # Observed and expected events/non-events in each bin
+    O1 = grouped["y"].sum().to_numpy()
+    n  = grouped.size().to_numpy()
+    O0 = n - O1
+    E1 = grouped["p"].sum().to_numpy()
+    E0 = n - E1
+
+    eps = 1e-12
+    stat = np.sum((O1 - E1) ** 2 / (E1 + eps) + (O0 - E0) ** 2 / (E0 + eps))
+    # 自由度为（有效分组数 - 2）
+    df_hl = max(len(O1) - 2, 1)
+    p_value = 1.0 - chi2.cdf(stat, df_hl)
+    return float(p_value)
+
+hl_pvals = {}
+for name, (yt, yp) in roc_data.items():
+    try:
+        hl_pvals[name] = hosmer_lemeshow_p(yt, yp, g=10)
+    except Exception:
+        hl_pvals[name] = np.nan
 
 # -----------------------------
 # 4) Plot ROC
@@ -195,7 +235,10 @@ plt.figure(figsize=(6, 6), dpi=300)
 for name, (yt, yp) in roc_data.items():
     xb, yb = bin_quantile(yp, yt, n_bins=20)
     sm = lowess(yb, xb, frac=0.6, return_sorted=True)
-    plt.plot(sm[:, 0], sm[:, 1], lw=2, label=f"{name} (Brier={brier_notes[name]:.3f})")
+    plt.plot(
+        sm[:, 0], sm[:, 1], lw=2,
+        label=f"{name} (Brier={brier_notes[name]:.3f}, HL-p={hl_pvals.get(name, np.nan):.3f})"
+    )
 plt.plot([0, 1], [0, 1], "k--", lw=1, label="Perfectly calibrated")
 plt.gca().set_aspect('equal', adjustable='box')
 plt.xlim(-0.01, 1.01); plt.ylim(-0.01, 1.01)
@@ -207,6 +250,11 @@ plt.tight_layout()
 plt.savefig("Calibration_AllModels.png", dpi=300)
 plt.show()
 print("✅ Saved: Calibration_AllModels.png")
+
+# 同步打印各模型 H-L p 值
+print("\nHosmer–Lemeshow test p-values (g=10):")
+for name in roc_data.keys():
+    print(f"  {name}: HL-p = {hl_pvals.get(name, np.nan):.4f}")
 
 # ============================================================
 # 6) MLP — Performance at Representative Thresholds & Simulated PPV/NPV
@@ -279,6 +327,5 @@ for _, r in mlp_thr_df.iterrows():
 sim_df = pd.DataFrame(sim_rows)
 sim_df.to_excel("MLP_PPV_NPV_Simulated_Prevalence.xlsx", index=False)
 print("✅ Saved: MLP_PPV_NPV_Simulated_Prevalence.xlsx")
-
 print(sim_df.head())
 
