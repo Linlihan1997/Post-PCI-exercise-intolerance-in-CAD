@@ -47,13 +47,13 @@ To assess robustness, the Boruta algorithm was applied to evaluate the relative 
 **Clinical Utility**: Decision curve analysis (DCA) for net benefit comparison.  
 **Interpretability**: Feature importance via SHAP (global and local explanations).  
 
-# 5. Deployment
+# 5. Web-based Deployment
 An **interactive web calculator** was developed using **Shiny (Python)** to facilitate clinical application of the MLP model.  
 Healthcare professionals can input eight clinical variables (**Age, BMI, Diabetes, Gender, Hb, RBC, RHR, Smoking**) to obtain individualized risk probabilities and visualize variable contributions.  
 Access the online calculator:  
 👉 https://hunning.shinyapps.io/intolerance_mlp/
 
-# 6. Deployment
+# 6. Local Implementation and Dependencies
 All scripts are implemented in Python 3.9 and R 4.3.  
 Required dependencies include numpy, pandas, scikit-learn, xgboost, lightgbm, and matplotlib.  
 For the Shiny deployment, ensure that the reticulate package correctly links to the local Python environment  
